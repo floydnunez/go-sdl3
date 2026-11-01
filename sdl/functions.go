@@ -1,6 +1,7 @@
 package sdl
 
 import (
+	"errors"
 	"runtime"
 	"slices"
 	"unsafe"
@@ -382,8 +383,6 @@ func IOFromFile(file, mode string) (*IOStream, error) {
 
 // SDL_IOFromConstMem - Use this function to prepare a read-only memory buffer for use with SDL_IOStream.
 // (https://wiki.libsdl.org/SDL3/SDL_IOFromConstMem)
-// Note: This function is unsafe as it is required for `mem` not to be garbage collected while the IOStream is in use.
-// Please use IOFromBytes or IOFromDynamicMem, unless you can guarantee that `mem` will be kept alive.
 func IOFromConstMem(mem []byte) (*IOStream, error) {
 	stream := iIOFromConstMem(
 		uintptr(unsafe.Pointer(unsafe.SliceData(mem))),
@@ -392,8 +391,13 @@ func IOFromConstMem(mem []byte) (*IOStream, error) {
 	if stream == nil {
 		return nil, internal.LastErr()
 	}
-
-	runtime.KeepAlive(mem)
+	props, err := stream.Properties()
+	if err != nil {
+		return nil, errors.Join(err, stream.Close())
+	}
+	if err := retainGoMemory(props, mem); err != nil {
+		return nil, errors.Join(err, stream.Close())
+	}
 
 	return stream, nil
 }
@@ -519,7 +523,15 @@ func CreateSurfaceFrom(width, height int, format PixelFormat, pixels []byte, pit
 	if surface == nil {
 		return nil, internal.LastErr()
 	}
-	runtime.KeepAlive(pixels)
+	props, err := surface.Properties()
+	if err != nil {
+		surface.Destroy()
+		return nil, err
+	}
+	if err := retainGoMemory(props, pixels); err != nil {
+		surface.Destroy()
+		return nil, err
+	}
 
 	return surface, nil
 }
