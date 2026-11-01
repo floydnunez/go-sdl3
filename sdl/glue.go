@@ -101,6 +101,7 @@ func (b *GamepadBinding) OutputAxis() GamepadBindingOutputAxis {
 // TODO: union type
 // https://github.com/libsdl-org/SDL/blob/release-3.2.2/include/SDL3/SDL_events.h#L986
 type Event struct {
+	_    [0]uint64
 	Type EventType
 	data [124]byte
 	//EventData [48]byte // 52 is size of SDL_TextEditingEvent minus Type (uint32)
@@ -522,8 +523,9 @@ func (e *Event) UserEvent() *UserEvent {
 // (https://wiki.libsdl.org/SDL3/SDL_HapticEffect)
 // Union type
 type HapticEffect struct {
+	_          [0]uint64
 	Type       uint16
-	HapticData [66]byte // 68 is full size of SDL_HapticCondition
+	HapticData [70]byte
 }
 
 // SDL_HitTest - Callback used for hit-testing.
