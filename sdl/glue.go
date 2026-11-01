@@ -10,6 +10,8 @@ import (
 
 var EndLoop = errors.New("graceful termination")
 
+var ErrFailedWithoutMessage = errors.New("sdl: the call failed and SDL_GetError is empty")
+
 // This file contains extra glue code for types and enums that couldn't be
 // generated automatically.
 // It includes union types, function callbacks, #defines and more.

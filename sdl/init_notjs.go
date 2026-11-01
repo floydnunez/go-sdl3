@@ -47,7 +47,7 @@ func LoadLibrary(path string) error {
 		if msg := iGetError(); msg != "" {
 			return errors.New(msg)
 		}
-		return nil
+		return ErrFailedWithoutMessage
 	})
 
 	return nil

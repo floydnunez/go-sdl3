@@ -22,7 +22,7 @@ func init() {
 		if msg := iGetError(); msg != "" {
 			return errors.New(msg)
 		}
-		return nil
+		return ErrFailedWithoutMessage
 	})
 }
 
