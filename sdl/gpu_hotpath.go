@@ -3,6 +3,8 @@ package sdl
 import (
 	"runtime"
 	"unsafe"
+
+	"github.com/Zyko0/go-sdl3/internal"
 )
 
 // InitGPUHotpath replaces the auto-generated closures of the calls a GPU
@@ -203,4 +205,15 @@ func submitGPUCommandBufferNoAlloc(command_buffer *GPUCommandBuffer) bool {
 	r := hotcall(_addr_SDL_SubmitGPUCommandBuffer, uintptr(unsafe.Pointer(command_buffer)), 0, 0, 0, 0, 0)
 	runtime.KeepAlive(command_buffer)
 	return uint8(r) != 0
+}
+
+// WaitAndAcquireGPUSwapchainTextureInto is WaitAndAcquireGPUSwapchainTexture
+// into t, the caller's, kept from frame to frame: the other returns a new
+// SwapchainTexture each call, an allocation a frame. t.Texture is nil when
+// there is no texture to draw to (the window minimized).
+func (cb *GPUCommandBuffer) WaitAndAcquireGPUSwapchainTextureInto(window *Window, t *SwapchainTexture) error {
+	if !iWaitAndAcquireGPUSwapchainTexture(cb, window, &t.Texture, &t.Width, &t.Height) {
+		return internal.LastErr()
+	}
+	return nil
 }
