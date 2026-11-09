@@ -41,6 +41,8 @@ func InitGPUHotpath() {
 	iBlitGPUTexture = blitGPUTextureNoAlloc
 	iAcquireGPUCommandBuffer = acquireGPUCommandBufferNoAlloc
 	iSubmitGPUCommandBuffer = submitGPUCommandBufferNoAlloc
+	iSetGPUScissor = setGPUScissorNoAlloc
+	iUploadToGPUTexture = uploadToGPUTextureNoAlloc
 }
 
 func boolArg(b bool) uintptr {
@@ -216,4 +218,17 @@ func (cb *GPUCommandBuffer) WaitAndAcquireGPUSwapchainTextureInto(window *Window
 		return internal.LastErr()
 	}
 	return nil
+}
+
+func setGPUScissorNoAlloc(render_pass *GPURenderPass, scissor *Rect) {
+	hotcall(_addr_SDL_SetGPUScissor, uintptr(unsafe.Pointer(render_pass)), uintptr(unsafe.Pointer(scissor)), 0, 0, 0, 0)
+	runtime.KeepAlive(render_pass)
+	runtime.KeepAlive(scissor)
+}
+
+func uploadToGPUTextureNoAlloc(copy_pass *GPUCopyPass, source *GPUTextureTransferInfo, destination *GPUTextureRegion, cycle bool) {
+	hotcall(_addr_SDL_UploadToGPUTexture, uintptr(unsafe.Pointer(copy_pass)), uintptr(unsafe.Pointer(source)), uintptr(unsafe.Pointer(destination)), boolArg(cycle), 0, 0)
+	runtime.KeepAlive(copy_pass)
+	runtime.KeepAlive(source)
+	runtime.KeepAlive(destination)
 }
