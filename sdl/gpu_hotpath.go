@@ -26,6 +26,19 @@ func InitGPUHotpath() {
 	iUnmapGPUTransferBuffer = unmapGPUTransferBufferNoAlloc
 	iWaitAndAcquireGPUSwapchainTexture = waitAndAcquireGPUSwapchainTextureNoAlloc
 	iPollEvent = pollEventNoAlloc
+	// The compute passes', the copy passes' and the command buffers'.
+	iBeginGPUComputePass = beginGPUComputePassNoAlloc
+	iBindGPUComputePipeline = bindGPUComputePipelineNoAlloc
+	iBindGPUComputeSamplers = bindGPUComputeSamplersNoAlloc
+	iPushGPUComputeUniformData = pushGPUComputeUniformDataNoAlloc
+	iDispatchGPUCompute = dispatchGPUComputeNoAlloc
+	iEndGPUComputePass = endGPUComputePassNoAlloc
+	iBeginGPUCopyPass = beginGPUCopyPassNoAlloc
+	iUploadToGPUBuffer = uploadToGPUBufferNoAlloc
+	iEndGPUCopyPass = endGPUCopyPassNoAlloc
+	iBlitGPUTexture = blitGPUTextureNoAlloc
+	iAcquireGPUCommandBuffer = acquireGPUCommandBufferNoAlloc
+	iSubmitGPUCommandBuffer = submitGPUCommandBufferNoAlloc
 }
 
 func boolArg(b bool) uintptr {
@@ -118,5 +131,76 @@ func waitAndAcquireGPUSwapchainTextureNoAlloc(command_buffer *GPUCommandBuffer, 
 func pollEventNoAlloc(event *Event) bool {
 	r := hotcall(_addr_SDL_PollEvent, uintptr(unsafe.Pointer(event)), 0, 0, 0, 0, 0)
 	runtime.KeepAlive(event)
+	return uint8(r) != 0
+}
+
+func beginGPUComputePassNoAlloc(command_buffer *GPUCommandBuffer, storage_texture_bindings *GPUStorageTextureReadWriteBinding, num_storage_texture_bindings uint32, storage_buffer_bindings *GPUStorageBufferReadWriteBinding, num_storage_buffer_bindings uint32) *GPUComputePass {
+	r := hotcall(_addr_SDL_BeginGPUComputePass, uintptr(unsafe.Pointer(command_buffer)), uintptr(unsafe.Pointer(storage_texture_bindings)), uintptr(num_storage_texture_bindings), uintptr(unsafe.Pointer(storage_buffer_bindings)), uintptr(num_storage_buffer_bindings), 0)
+	runtime.KeepAlive(command_buffer)
+	runtime.KeepAlive(storage_texture_bindings)
+	runtime.KeepAlive(storage_buffer_bindings)
+	return (*GPUComputePass)(*(*unsafe.Pointer)(unsafe.Pointer(&r)))
+}
+
+func bindGPUComputePipelineNoAlloc(compute_pass *GPUComputePass, compute_pipeline *GPUComputePipeline) {
+	hotcall(_addr_SDL_BindGPUComputePipeline, uintptr(unsafe.Pointer(compute_pass)), uintptr(unsafe.Pointer(compute_pipeline)), 0, 0, 0, 0)
+	runtime.KeepAlive(compute_pass)
+	runtime.KeepAlive(compute_pipeline)
+}
+
+func bindGPUComputeSamplersNoAlloc(compute_pass *GPUComputePass, first_slot uint32, texture_sampler_bindings *GPUTextureSamplerBinding, num_bindings uint32) {
+	hotcall(_addr_SDL_BindGPUComputeSamplers, uintptr(unsafe.Pointer(compute_pass)), uintptr(first_slot), uintptr(unsafe.Pointer(texture_sampler_bindings)), uintptr(num_bindings), 0, 0)
+	runtime.KeepAlive(compute_pass)
+	runtime.KeepAlive(texture_sampler_bindings)
+}
+
+func pushGPUComputeUniformDataNoAlloc(command_buffer *GPUCommandBuffer, slot_index uint32, data uintptr, length uint32) {
+	hotcall(_addr_SDL_PushGPUComputeUniformData, uintptr(unsafe.Pointer(command_buffer)), uintptr(slot_index), data, uintptr(length), 0, 0)
+	runtime.KeepAlive(command_buffer)
+}
+
+func dispatchGPUComputeNoAlloc(compute_pass *GPUComputePass, groupcount_x uint32, groupcount_y uint32, groupcount_z uint32) {
+	hotcall(_addr_SDL_DispatchGPUCompute, uintptr(unsafe.Pointer(compute_pass)), uintptr(groupcount_x), uintptr(groupcount_y), uintptr(groupcount_z), 0, 0)
+	runtime.KeepAlive(compute_pass)
+}
+
+func endGPUComputePassNoAlloc(compute_pass *GPUComputePass) {
+	hotcall(_addr_SDL_EndGPUComputePass, uintptr(unsafe.Pointer(compute_pass)), 0, 0, 0, 0, 0)
+	runtime.KeepAlive(compute_pass)
+}
+
+func beginGPUCopyPassNoAlloc(command_buffer *GPUCommandBuffer) *GPUCopyPass {
+	r := hotcall(_addr_SDL_BeginGPUCopyPass, uintptr(unsafe.Pointer(command_buffer)), 0, 0, 0, 0, 0)
+	runtime.KeepAlive(command_buffer)
+	return (*GPUCopyPass)(*(*unsafe.Pointer)(unsafe.Pointer(&r)))
+}
+
+func uploadToGPUBufferNoAlloc(copy_pass *GPUCopyPass, source *GPUTransferBufferLocation, destination *GPUBufferRegion, cycle bool) {
+	hotcall(_addr_SDL_UploadToGPUBuffer, uintptr(unsafe.Pointer(copy_pass)), uintptr(unsafe.Pointer(source)), uintptr(unsafe.Pointer(destination)), boolArg(cycle), 0, 0)
+	runtime.KeepAlive(copy_pass)
+	runtime.KeepAlive(source)
+	runtime.KeepAlive(destination)
+}
+
+func endGPUCopyPassNoAlloc(copy_pass *GPUCopyPass) {
+	hotcall(_addr_SDL_EndGPUCopyPass, uintptr(unsafe.Pointer(copy_pass)), 0, 0, 0, 0, 0)
+	runtime.KeepAlive(copy_pass)
+}
+
+func blitGPUTextureNoAlloc(command_buffer *GPUCommandBuffer, info *GPUBlitInfo) {
+	hotcall(_addr_SDL_BlitGPUTexture, uintptr(unsafe.Pointer(command_buffer)), uintptr(unsafe.Pointer(info)), 0, 0, 0, 0)
+	runtime.KeepAlive(command_buffer)
+	runtime.KeepAlive(info)
+}
+
+func acquireGPUCommandBufferNoAlloc(device *GPUDevice) *GPUCommandBuffer {
+	r := hotcall(_addr_SDL_AcquireGPUCommandBuffer, uintptr(unsafe.Pointer(device)), 0, 0, 0, 0, 0)
+	runtime.KeepAlive(device)
+	return (*GPUCommandBuffer)(*(*unsafe.Pointer)(unsafe.Pointer(&r)))
+}
+
+func submitGPUCommandBufferNoAlloc(command_buffer *GPUCommandBuffer) bool {
+	r := hotcall(_addr_SDL_SubmitGPUCommandBuffer, uintptr(unsafe.Pointer(command_buffer)), 0, 0, 0, 0, 0)
+	runtime.KeepAlive(command_buffer)
 	return uint8(r) != 0
 }
